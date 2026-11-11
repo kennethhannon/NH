@@ -5,14 +5,14 @@
 - Source pushed to GitHub: `kennethhannon/NH`.
 - Four working client-side beta applications: Settlement Studio, FinishLine, Shift Math, QuickQuote.
 - Automated numeric tests: 9 tests passing locally as of this version.
-- End-to-end browser smoke tests: authored and scheduled in GitHub Actions. **Not yet observed passing in hosted CI**.
-- GitHub Pages: blocked until Pages is activated by the repository owner. Vercel is an alternate host.
+- End-to-end browser smoke tests: maintained in GitHub Quality Gate using a pinned Playwright Docker image. Check the current commit's CI for success.
+- Commercial site not live: owner must connect Cloudflare Pages to GitHub (`npm run build`, output `dist`). GitHub Pages is not for primary business/SaaS hosting; Vercel Hobby is noncommercial.
 - No payment processor, subscribers, verified demand, analytics, user reviews, or actual revenue.
 
 ## Release gates
 
 1. CI math tests and end-to-end smoke tests both green on latest main commit.
-2. Production Vercel URL returns pages and assets; check errors on mobile/desktop.
+2. Production Cloudflare Pages URL returns pages and assets; check errors on mobile/desktop.
 3. Privacy notice and disclaimers reviewed; verify business/trade names and domain availability.
 4. Do 10 moderated demos: 5 local independent contractors, 3 homeowners or project managers, 2 night-shift workers.
 5. Ask each user to finish one real task. Collect consented feedback on what they would pay for and why.

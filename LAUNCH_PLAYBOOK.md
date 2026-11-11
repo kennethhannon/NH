@@ -1,13 +1,13 @@
 # PracticalKit launch and first-revenue playbook — November 2026
 
 ## Current truthful status
-- Working GitHub repository and calculator unit tests.
-- Public site **not verified**: GitHub Pages needs to be activated by repository admin at Settings > Pages > Source > GitHub Actions. The GitHub Action cannot create the Pages site with the current integration permissions.
+- Working GitHub repository with four apps, calculator unit tests, and desktop/mobile smoke tests in GitHub CI.
+- Public website **not verified**. For commercial launch, use Cloudflare Pages Git integration; connect the GitHub repository and set build command `npm run build`, output directory `dist`, production branch `main`. GitHub Pages is intended for a project showcase, not commerce/SaaS hosting.
 - No payment acceptance, subscription, buyers, or revenue yet. Do not advertise paid reports as available.
 - Product terms/branding are provisional; check conflicts before commercial sale.
 
 ## Release gate
-1. Enable GitHub Pages, or connect Vercel and deploy this repository.
+1. Connect Cloudflare Pages to GitHub and deploy this repository (or choose a commercial Vercel Pro plan). Verify the live URL; do not use GitHub Pages for a website primarily aimed at commerce.
 2. Verify all live URLs on mobile and desktop. Run Quality Gate (Node tests + Chromium smoke tests).
 3. Confirm sample estimates, browser exports, photo handling, imported backups, print/PDF output, and large-project browser storage behavior.
 4. Publish a real contact/support method, privacy notice, terms, refund policy, and accessibility check; do not post personal contact info automatically.
@@ -15,7 +15,7 @@
 6. Review all legal/policy language: settlement and shift tools provide illustrative calculations, not insurance or wage-law determinations.
 
 ## Which app to sell first?
-1. **FinishLine** for owner walkthroughs + remodelers: price-test a $19 one-project export pack or a $15/month solo contractor plan **after** features and payments exist. Value proposition: capture issues, attach photos, print a record.
+1. **QuickQuote / FinishLine** for independent contractors, quoting and job closeout. **FinishLine** for owner walkthroughs + remodelers: price-test a $19 one-project export pack or a $15/month solo contractor plan **after** features and payments exist. Value proposition: capture issues, attach photos, print a record.
 2. **Settlement Studio** for claimants: test a $9 one-time report template, but users need accurate explanations and evidence capture. Do not claim the output can determine mandatory reimbursements.
 3. **Shift Math** as a free acquisition tool: subscription potential depends on payroll-grade accuracy and recurring historical reports; do not charge yet.
 
@@ -48,7 +48,8 @@ Avoid paid APIs and recurring services until traffic or a paying pilot exists. A
 
 ## Publish destinations
 - GitHub repo: https://github.com/kennethhannon/NH
-- GitHub Pages settings: https://github.com/kennethhannon/NH/settings/pages
+- Cloudflare Git deployment: https://developers.cloudflare.com/pages/get-started/git-integration/
+- GitHub Pages settings (noncommercial demo only): https://github.com/kennethhannon/NH/settings/pages
 - Github Actions: https://github.com/kennethhannon/NH/actions
 
 ## Delegating to Cursor and Grok

@@ -1,25 +1,29 @@
-name: PracticalKit quality checks
+name: PracticalKit Quality Gate
 on:
   push:
     branches: [main]
   pull_request:
+    branches: [main]
+  workflow_dispatch:
 permissions:
   contents: read
 jobs:
-  test:
+  calculation-and-build:
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
-        with:
-          persist-credentials: false
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Test calculator logic
-        run: npm test
-      - name: Install Playwright browser testing
-        run: |
-          python3 -m pip install --user --break-system-packages playwright
-          python3 -m playwright install chromium --with-deps
-      - name: Test site in desktop and mobile browser sizes
-        run: python3 tests/browser_smoke.py
+      - run: npm test
+      - run: npm run build
+  desktop-and-mobile-browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    container:
+      image: mcr.microsoft.com/playwright/python:v1.56.0-noble
+    steps:
+      - uses: actions/checkout@v4
+      - run: python -m pip install playwright==1.56.0
+      - run: python tests/browser_smoke.py

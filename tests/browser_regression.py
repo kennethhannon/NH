@@ -9,7 +9,7 @@ import socket
 import subprocess
 import time
 from pathlib import Path
-from playwright.sync_api import sync_playwright
+from playwright.sync_api import sync_playwright, expect
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -59,7 +59,7 @@ def run():
                 assert page.locator("#total").inner_text() == "$0.00"
                 page.locator("#upload").set_input_files({
                     "name": "quickquote-estimate.json", "mimeType": "application/json", "buffer": payload})
-                assert page.locator("#total").inner_text() == "$194.40"
+                expect(page.locator("#total")).to_have_text("$194.40", timeout=10000)
                 page.evaluate("window.__printCalled=false;window.print=()=>{window.__printCalled=true}")
                 page.locator("#print").click()
                 assert page.evaluate("window.__printCalled"), "QuickQuote print action did not fire"
@@ -83,7 +83,7 @@ def run():
                     "name":"evidence.png","mimeType":"image/png",
                     "buffer":base64.b64decode(png_data)})
                 page.locator("#form button[type=submit]").click()
-                assert page.locator("#count").inner_text() == "(1)"
+                expect(page.locator("#count")).to_have_text("(1)", timeout=10000)
                 assert page.locator("#total").inner_text() == "$425.00"
                 assert page.locator("#entries img").count() == 1
                 with page.expect_download() as dl:
@@ -92,10 +92,10 @@ def run():
                 saved=json.loads(payload)
                 assert len(saved["issues"])==1 and saved["issues"][0]["photo"].startswith("data:image/jpeg;base64,")
                 page.locator("#clear").click()
-                assert page.locator("#count").inner_text() == "(0)"
+                expect(page.locator("#count")).to_have_text("(0)", timeout=10000)
                 page.locator("#importfile").set_input_files({
                     "name":"finishline-punchlist.json","mimeType":"application/json","buffer":payload})
-                assert page.locator("#count").inner_text() == "(1)"
+                expect(page.locator("#count")).to_have_text("(1)", timeout=10000)
                 assert page.locator("#entries img").count() == 1
                 page.evaluate("window.__printCalled=false;window.print=()=>{window.__printCalled=true}")
                 page.locator("#print").click()

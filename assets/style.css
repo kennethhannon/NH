@@ -3,3 +3,8 @@
 .table-scroll{overflow-x:auto;margin:13px 0}.quote-table{border-collapse:collapse;width:100%;font-size:13px}.quote-table td,.quote-table th{text-align:left;border-bottom:1px solid var(--border);padding:8px 5px;vertical-align:middle}.quote-table input:not([type=checkbox]){min-width:70px;width:100%;padding:7px;border:1px solid #3a506c;border-radius:6px;background:#0a1424;color:var(--text)}.quote-table td:first-child input{min-width:130px}.quote-table input[type=checkbox]{width:18px;height:18px;accent-color:var(--accent)}.quote-table button.remove-quote{padding:5px 8px}.report-text{white-space:pre-wrap;overflow-wrap:anywhere;font-size:14px}.quote-total{margin:17px 0}@media print{.quote-table td,.quote-table th{color:black;border-bottom:1px solid #bbb}.report-text{color:#222}.quote-total{border:1px solid #aaa}.results{page-break-inside:auto}.report-lines{margin:20px 0;display:table}.report-lines tr{break-inside:avoid}}
 
 .quote-live-row{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px;margin:14px 0}.quote-live-total{font-weight:700;color:var(--muted);font-size:14px;display:flex;gap:10px;align-items:center}.quote-live-total strong{color:var(--accent);font-size:24px}@media print{.quote-live-row{display:none!important}}
+
+/* Keep wide contractor line-item tables scrolling within the editor on phones. */
+.app-grid>.editor,.app-grid>.results,.app-grid>.panel{min-width:0}
+.table-scroll{max-width:100%;min-width:0;overflow-x:auto;-webkit-overflow-scrolling:touch}
+@media(max-width:850px){.app-grid{grid-template-columns:minmax(0,1fr)}}

@@ -5,3 +5,8 @@ test('12.5h night shift with a 30m break and 4h until weekly overtime',()=>{cons
 test('break outside shift rejected',()=>assert.throws(()=>shiftMath({start:'09:00',end:'17:00',breakStart:'18:00',breakMin:30,nightStart:'18:00',nightEnd:'06:00'}),/fit within/));
 test('full-day differential plus OT on differential',()=>{const r=shiftMath({start:'19:00',end:'23:00',breakStart:'20:00',breakMin:0,nightStart:'00:00',nightEnd:'00:00',priorHours:40,otThreshold:40,base:20,diff:2,otFactor:1.5,otDiff:'both'});assert.equal(r.gross,132)});
 test('shift ending at same clock time represents 24h',()=>{const r=shiftMath({start:'00:00',end:'00:00',breakStart:'12:00',breakMin:60,nightStart:'20:00',nightEnd:'04:00',base:10,diff:0,otThreshold:40});assert.equal(r.paid,23)});
+import {quoteMath} from '../apps/quickquote/math.mjs';
+test('QuickQuote calculations: item tax, discount, deposit and balance',()=>{const r=quoteMath({items:[{description:'Material',qty:2,rate:125,taxable:true},{description:'Labor',qty:5,rate:80,taxable:false}],discountPercent:10,taxPercent:8,depositPercent:25});assert.deepEqual([r.subtotal,r.discount,r.taxableAfterDiscount,r.salesTax,r.total,r.deposit,r.balance],[650,65,225,18,603,150.75,452.25]);});
+test('QuickQuote does not tax labor and rejects invalid percentages',()=>{const r=quoteMath({items:[{qty:2,rate:50,taxable:false}],taxPercent:8});assert.equal(r.salesTax,0);assert.throws(()=>quoteMath({discountPercent:101}),/percentages/);});
+
+test('deductible cannot create a negative settlement check',()=>{const r=settlement({offer:1000,insurerTax:0,deductible:1500,replacement:1000});assert.equal(r.check,0);assert.equal(r.shortfall,1000)});

@@ -1,9 +1,10 @@
 # PracticalKit — Public Beta
 
-Three lightweight web tools. Free and private-by-default: input values are processed locally and never sent to a server.
+Four lightweight web tools. Free and private-by-default: input values are processed locally and never sent to a server.
 
 - **Settlement Studio**: model total-loss settlement offers, replacement vehicle costs, loan balance, and asking-price comparables.
 - **FinishLine**: contractor punch lists, resized photos, statuses, cost summaries, local autosave, JSON import/export, and printable reports.
+- **QuickQuote**: itemized contractor estimates with labor, taxable materials, discounts, deposits, printable reports and local backups.
 - **Shift Math**: overnight shifts, unpaid breaks, night differential, simple overtime models, and gross-pay comparison.
 
 ## Run locally
@@ -24,7 +25,7 @@ Node.js >= 18 required for tests.
 
 ## Deploy
 
-The repo contains `.github/workflows/pages.yml`. In **GitHub → Settings → Pages**, choose **GitHub Actions** as the build and deployment source. Push to `main` to deploy to GitHub Pages. The Pages workflow may not work until Pages is enabled in repository settings.
+This repository can deploy automatically from Git to Vercel when linked as a Vercel Git project. GitHub Pages is an alternate route: first enable Pages in repository settings and choose **GitHub Actions**, then manually dispatch `.github/workflows/pages.yml`.
 
 ## Product limitations
 
@@ -46,3 +47,7 @@ All calculations and stored project data stay in the user's browser (except if t
 4. Add clear support/contact pages, terms, privacy notice, and actual domain before paid launch.
 
 All brand/product names are provisional and must be checked for legal conflicts before a commercial launch.
+
+## Release and validation
+
+`npm test` checks math. `python tests/browser_smoke.py` runs browser interactions using installed Playwright+Chromium; it also runs in GitHub Actions. See `LAUNCH.md` for acceptance, customer interviews, monetization steps and outstanding blockers.

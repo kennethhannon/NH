@@ -2,6 +2,8 @@
 
 Target: small, high-quality utilities with narrow search intent and low hosting costs. Public beta does not yet collect payments.
 
+QuickQuote shipped as a free beta with itemized estimates; payments and business account functionality are not implemented.
+
 ## Candidate niches
 
 | App | Primary buyer | Proposed paid offer (hypothesis) | Difficulty to sell |

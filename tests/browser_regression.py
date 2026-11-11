@@ -50,6 +50,16 @@ def run():
                     "#balance": "$145.80",
                 }.items():
                     assert page.locator(selector).inner_text() == expected, f"{selector} incorrect"
+                with page.expect_download() as pdf_download:
+                    page.locator("#pdf").click()
+                pdf_file=pdf_download.value
+                assert pdf_file.suggested_filename.startswith("QuickQuote-")
+                assert pdf_file.suggested_filename.endswith(".pdf")
+                pdf_bytes=Path(pdf_file.path()).read_bytes()
+                assert pdf_bytes.startswith(b"%PDF-1.4"), "Not a valid PDF header"
+                assert b"$194.40" in pdf_bytes, "Estimate total missing from downloaded PDF"
+                assert b"Sample Painter LLC" in pdf_bytes, "Business name missing from PDF"
+                assert pdf_bytes.rstrip().endswith(b"%%EOF"), "PDF document is incomplete"
                 with page.expect_download() as dl:
                     page.locator("#export").click()
                 payload = Path(dl.value.path()).read_bytes()

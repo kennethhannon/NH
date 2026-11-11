@@ -8,3 +8,5 @@
 .app-grid>.editor,.app-grid>.results,.app-grid>.panel{min-width:0}
 .table-scroll{max-width:100%;min-width:0;overflow-x:auto;-webkit-overflow-scrolling:touch}
 @media(max-width:850px){.app-grid{grid-template-columns:minmax(0,1fr)}}
+
+[hidden]{display:none!important}

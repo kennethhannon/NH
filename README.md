@@ -22,9 +22,19 @@ npm test
 
 Node.js >= 18 required for tests.
 
-## Deploy
+## Build and deploy
 
-The repo contains `.github/workflows/pages.yml`. In **GitHub → Settings → Pages**, choose **GitHub Actions** as the build and deployment source. Push to `main` to deploy to GitHub Pages. The Pages workflow may not work until Pages is enabled in repository settings.
+```sh
+npm run build
+```
+
+This creates a self-contained `dist/` directory with the homepage and apps. It is safe for static hosting, and does not include the internal docs or tests.
+
+**Recommended for commercial use:** Cloudflare Pages with GitHub integration. Choose repository `kennethhannon/NH`, production branch `main`, build command `npm run build`, and output directory `dist`. After the owner connects the GitHub repository in Cloudflare, future merges can deploy automatically. Verify the assigned `*.pages.dev` URL before sharing it.
+
+**Project showcase only:** The included GitHub Pages workflow also builds `dist/`, but GitHub Pages is *not* permitted as free hosting primarily for running an online business or commercial SaaS. The repository owner must enable GitHub Pages in Settings if they want a noncommercial demo.
+
+Vercel's free Hobby plan is noncommercial; a paid Vercel Pro account is required for an intended commercial deployment. See the official hosting policies before choosing. Payment processing remains unconfigured.
 
 ## Product limitations
 

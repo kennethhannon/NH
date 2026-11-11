@@ -1,5 +1,6 @@
 import {$,usd,download,load,save,stamp} from '../../assets/common.js';
 import {quoteMath} from './math.mjs';
+import {createQuotePDF} from './pdf.mjs';
 const KEY='pk-quickquote-v1';
 const fields=['business','contact','customer','job','date','validUntil','scope','discount','tax','deposit','terms'];
 const limit=(v,n=160)=>String(v??'').slice(0,n);
@@ -25,6 +26,29 @@ function refresh(){readMeta();try{const result=quoteMath({items:state.items,disc
 for(const k of fields)$(k).addEventListener('input',refresh);
 $('add').addEventListener('click',()=>{if(state.items.length>=200){$('error').textContent='Maximum 200 line items';return}state.items.push(newItem());render()});
 $('export').addEventListener('click',()=>{if(refresh())download('quickquote-estimate.json',JSON.stringify({...state,exportedAt:stamp()},null,2))});
+function buildPdfFile(){
+  if(!refresh())throw Error($('error').textContent||'Correct the estimate before downloading.');
+  const result=quoteMath({items:state.items,discountPercent:state.meta.discount,taxPercent:state.meta.tax,depositPercent:state.meta.deposit});
+  const label=(state.meta.job||state.meta.customer||'estimate').normalize('NFKD').replace(/[^a-z0-9_-]+/gi,'-').replace(/^-+|-+$/g,'').slice(0,56)||'estimate';
+  return {fileName:'QuickQuote-'+label+'.pdf',bytes:createQuotePDF(state.meta,result)};
+}
+$('pdf').addEventListener('click',()=>{
+  try{
+    const {fileName,bytes}=buildPdfFile();
+    download(fileName,bytes,'application/pdf');
+    $('pdfStatus').textContent='PDF created. Check Downloads or Files. On iPhone, use Share PDF to save to Files or print.';
+  }catch(err){$('error').textContent=err.message;}
+});
+const sharePdf=$('sharePdf');
+sharePdf.hidden=!(typeof File!=='undefined'&&typeof navigator.share==='function'&&typeof navigator.canShare==='function');
+sharePdf.addEventListener('click',async()=>{
+  try{
+    const {fileName,bytes}=buildPdfFile();
+    const file=new File([bytes],fileName,{type:'application/pdf'});
+    if(!navigator.canShare({files:[file]}))throw Error('This browser cannot share PDF files; try Download PDF.');
+    await navigator.share({title:state.meta.job||'Project estimate',files:[file]});
+  }catch(err){if(err.name!=='AbortError')$('error').textContent=err.message;}
+});
 $('print').addEventListener('click',()=>{if(refresh())window.print()});
 $('import').addEventListener('click',()=>$('upload').click());
 $('upload').addEventListener('change',async()=>{const f=$('upload').files?.[0];if(!f)return;try{if(f.size>300000)throw Error('File too large.');const obj=JSON.parse(await f.text());if(!obj||!Array.isArray(obj.items)||!obj.meta||typeof obj.meta!=='object')throw Error('Not a QuickQuote backup.');if(!confirm('Replace the current quote?'))return;state=clean(obj);render()}catch(e){$('error').textContent=e.message}finally{$('upload').value=''}});

@@ -71,6 +71,7 @@ def run():
                 page.locator('#items input[aria-label="Line item description"]').first.fill('Drywall patch')
                 page.locator('#items input[aria-label="Unit price"]').first.fill('150')
                 assert page.locator('#total').inner_text() == '$150.00'
+                assert page.locator('#inlineTotal').inner_text() == '$150.00'
                 page.locator('#add').click()
                 assert page.locator('#items tr').count() == 2
                 page.reload(wait_until='networkidle')

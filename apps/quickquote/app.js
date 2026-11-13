@@ -1,6 +1,7 @@
 import {$,usd,download,load,save,stamp} from '../../assets/common.js';
 import {quoteMath} from './math.mjs';
 import {createQuotePDF} from './pdf.mjs';
+import {LIBRARY_CAP, LIBRARY_KEY, normalizeLibrary, saveEstimate, deleteEstimate} from './library.mjs';
 const KEY='pk-quickquote-v1';
 const fields=['business','contact','customer','job','date','validUntil','scope','discount','tax','deposit','terms'];
 const limit=(v,n=160)=>String(v??'').slice(0,n);
@@ -8,6 +9,8 @@ const newItem=()=>({id:crypto.randomUUID(),description:'',qty:1,rate:0,taxable:f
 const defaults={business:'',contact:'',customer:'',job:'',date:new Date().toISOString().slice(0,10),validUntil:'',scope:'',discount:'0',tax:'0',deposit:'0',terms:''};
 function clean(raw){const x=(raw&&typeof raw==='object')?raw:{};return {meta:Object.fromEntries(fields.map(k=>[k,limit(x.meta?.[k]??defaults[k],['scope','terms'].includes(k)?4000:160)])),items:Array.isArray(x.items)?x.items.slice(0,200).map(y=>({id:crypto.randomUUID(),description:limit(y?.description,200),qty:limit(y?.qty??1,24),rate:limit(y?.rate??0,24),taxable:!!y?.taxable})):[]}}
 let state=clean(load(KEY,{meta:defaults,items:[newItem()]}));
+let archive=normalizeLibrary(load(LIBRARY_KEY,[]));
+let activeArchiveId=null;
 function readMeta(){state.meta=Object.fromEntries(fields.map(k=>[k,$(k).value]));}
 function persist(){readMeta();$('saved').textContent=save(KEY,state)?`Saved on this device · ${stamp()}`:'Browser storage unavailable; download a backup.';}
 function row(item){const tr=document.createElement('tr');const cell=()=>{const td=document.createElement('td');tr.append(td);return td};
@@ -51,6 +54,101 @@ sharePdf.addEventListener('click',async()=>{
 });
 $('print').addEventListener('click',()=>{if(refresh())window.print()});
 $('import').addEventListener('click',()=>$('upload').click());
-$('upload').addEventListener('change',async()=>{const f=$('upload').files?.[0];if(!f)return;try{if(f.size>300000)throw Error('File too large.');const obj=JSON.parse(await f.text());if(!obj||!Array.isArray(obj.items)||!obj.meta||typeof obj.meta!=='object')throw Error('Not a QuickQuote backup.');if(!confirm('Replace the current quote?'))return;state=clean(obj);render()}catch(e){$('error').textContent=e.message}finally{$('upload').value=''}});
-$('clear').addEventListener('click',()=>{if(!confirm('Clear this estimate and start a new one? Download a backup first if needed.'))return;state=clean({meta:defaults,items:[newItem()]});render()});
+$('upload').addEventListener('change',async()=>{const f=$('upload').files?.[0];if(!f)return;try{if(f.size>300000)throw Error('File too large.');const obj=JSON.parse(await f.text());if(!obj||!Array.isArray(obj.items)||!obj.meta||typeof obj.meta!=='object')throw Error('Not a QuickQuote backup.');if(!confirm('Replace the current quote?'))return;activeArchiveId=null;state=clean(obj);render();drawArchive()}catch(e){$('error').textContent=e.message}finally{$('upload').value=''}});
+$('clear').addEventListener('click',()=>{
+  if(!confirm('Clear this estimate and start a new one? Download a backup first if needed.'))return;
+  activeArchiveId=null;
+  state=clean({meta:defaults,items:[newItem()]});
+  render();drawArchive();
+});
+function drawArchive(selected=activeArchiveId){
+  const select=$('savedQuotes');
+  select.replaceChildren();
+  const prompt=document.createElement('option');
+  prompt.value='';
+  prompt.textContent=archive.length?'Choose a saved estimate':'No saved estimates yet';
+  select.append(prompt);
+  for(const row of archive){
+    const option=document.createElement('option');
+    option.value=row.id;
+    option.textContent=[row.job||'Untitled job',row.customer||'No customer',row.savedAt.slice(0,10)].join(' · ');
+    select.append(option);
+  }
+  select.value=archive.some(row=>row.id===selected)?selected:'';
+  $('libraryCount').textContent=`Saved estimates: ${archive.length}/${LIBRARY_CAP}`;
+}
+function storeArchive(next){
+  if(!save(LIBRARY_KEY,next))throw Error('Could not save estimate library. Browser storage might be full or disabled. Download an individual quote backup.');
+  archive=next;
+}
+$('saveQuote').addEventListener('click',()=>{
+  try {
+    if(!refresh())throw Error($('error').textContent||'Correct the estimate before saving.');
+    const id=activeArchiveId||crypto.randomUUID();
+    const record={
+      id,savedAt:new Date().toISOString(),
+      customer:state.meta.customer,job:state.meta.job,
+      quote:JSON.parse(JSON.stringify(state))
+    };
+    storeArchive(saveEstimate(archive,record));
+    activeArchiveId=id;drawArchive(id);
+    $('libraryStatus').textContent='Estimate saved on this device. Download a backup before clearing browser data or switching devices.';
+    $('error').textContent='';
+  }catch(err){$('libraryStatus').textContent='';$('error').textContent=err.message;}
+});
+$('openQuote').addEventListener('click',()=>{
+  const id=$('savedQuotes').value;
+  const row=archive.find(item=>item.id===id);
+  if(!row){$('libraryStatus').textContent='Select a saved estimate to open.';return;}
+  if(!confirm('Replace the quote currently in the editor with this saved estimate?'))return;
+  activeArchiveId=id;
+  state=clean(row.quote);
+  render();drawArchive(id);
+  $('libraryStatus').textContent='Opened saved estimate. Changes are not written to the library until you select Save current estimate.';
+});
+$('deleteQuote').addEventListener('click',()=>{
+  const id=$('savedQuotes').value;
+  const row=archive.find(item=>item.id===id);
+  if(!row){$('libraryStatus').textContent='Select a saved estimate to delete.';return;}
+  if(!confirm('Permanently remove the selected saved estimate from this browser? The quote currently in the editor will remain.'))return;
+  try{
+    storeArchive(deleteEstimate(archive,id));
+    if(activeArchiveId===id)activeArchiveId=null;
+    drawArchive();
+    $('libraryStatus').textContent='Saved copy removed. The current editor remains unchanged.';
+  }catch(err){$('libraryStatus').textContent='';$('error').textContent=err.message;}
+});
+$('backupLibrary').addEventListener('click',()=>{
+  try{
+    if(!archive.length){$('libraryStatus').textContent='No saved estimates to back up.';return;}
+    download('quickquote-library-backup.json',JSON.stringify({
+      format:'practicalkit-quickquote-library-v1',
+      exportedAt:new Date().toISOString(),estimates:archive
+    },null,2));
+    $('libraryStatus').textContent='Library backup downloaded. Keep it somewhere safe; browser storage can be cleared.';
+  }catch(err){$('error').textContent=err.message;}
+});
+$('restoreLibrary').addEventListener('click',()=>$('uploadLibrary').click());
+$('uploadLibrary').addEventListener('change',async()=>{
+  const file=$('uploadLibrary').files?.[0];
+  if(!file)return;
+  try{
+    if(file.size>12000000)throw Error('Library backup is too large (maximum 12 MB).');
+    const payload=JSON.parse(await file.text());
+    if(payload?.format!=='practicalkit-quickquote-library-v1'||
+       !Array.isArray(payload.estimates)||payload.estimates.length>LIBRARY_CAP){
+      throw Error('Not a supported QuickQuote library backup (maximum 25 estimates).');
+    }
+    const restored=normalizeLibrary(payload.estimates);
+    if(restored.length!==payload.estimates.length)throw Error('Library backup has invalid or duplicate estimates.');
+    if(!confirm('Replace ALL saved estimates in this browser with the selected library backup? Export your existing library first.'))return;
+    storeArchive(restored);
+    activeArchiveId=null;
+    drawArchive();
+    $('libraryStatus').textContent='Library restored on this device ('+restored.length+' estimates). The current editor was not replaced.';
+    $('error').textContent='';
+  }catch(err){$('libraryStatus').textContent='';$('error').textContent=err.message;}
+  finally{$('uploadLibrary').value='';}
+});
 render();
+drawArchive();

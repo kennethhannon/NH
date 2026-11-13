@@ -74,6 +74,37 @@ def run():
                 page.locator("#print").click()
                 assert page.evaluate("window.__printCalled"), "QuickQuote print action did not fire"
                 assert page.pdf(print_background=True).startswith(b"%PDF"), "QuickQuote PDF failed"
+                # Multi-estimate library: explicit save survives reload and an edited quote.
+                page.locator("#saveQuote").click()
+                expect(page.locator("#libraryCount")).to_have_text("Saved estimates: 1/25")
+                page.locator("#clear").click()
+                expect(page.locator("#total")).to_have_text("$0.00")
+                page.reload(wait_until="networkidle")
+                expect(page.locator("#libraryCount")).to_have_text("Saved estimates: 1/25")
+                page.locator("#savedQuotes").select_option(index=1)
+                page.locator("#openQuote").click()
+                expect(page.locator("#total")).to_have_text("$194.40")
+                page.locator("#job").fill("Revised demo project")
+                page.locator("#saveQuote").click()
+                expect(page.locator("#libraryCount")).to_have_text("Saved estimates: 1/25")
+                with page.expect_download() as dl:
+                    page.locator("#backupLibrary").click()
+                full_library=Path(dl.value.path()).read_bytes()
+                library_json=json.loads(full_library)
+                assert library_json["format"]=="practicalkit-quickquote-library-v1"
+                assert len(library_json["estimates"])==1
+                page.locator("#deleteQuote").click()
+                expect(page.locator("#libraryCount")).to_have_text("Saved estimates: 0/25")
+                page.locator("#uploadLibrary").set_input_files({
+                    "name":"quickquote-library-backup.json",
+                    "mimeType":"application/json",
+                    "buffer":full_library
+                })
+                expect(page.locator("#libraryCount")).to_have_text("Saved estimates: 1/25")
+                page.locator("#savedQuotes").select_option(index=1)
+                page.locator("#deleteQuote").click()
+                expect(page.locator("#libraryCount")).to_have_text("Saved estimates: 0/25")
+                expect(page.locator("#total")).to_have_text("$194.40")
 
                 # Full photo + backup/restore + print workflow.
                 page.goto(base + "/apps/finishline/", wait_until="networkidle")

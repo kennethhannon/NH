@@ -1,5 +1,7 @@
 # Grok Bot — one-time activation for the AI Product Studio
 
+> **Unattended operating update (Nov 13, 2026):** Read [AUTONOMY_POLICY.md](AUTONOMY_POLICY.md) before every scheduled run. Research or video **drafts for internal GitHub issues** should be posted automatically when supported by evidence; do not repeatedly ask the owner to choose between posting, expanding, and holding. When evidence is incomplete, expand once and post with transparent limitations. Use at most one substantive issue #13 research update per weekday and one #14 video draft per approved release. Once the first GitHub comment succeeds, save the tested routine and enable its weekday schedule within the existing plan. Do not treat this as permission to override app approval cards or buy/publish/contact/deploy. If a setting needs the owner's one-time approval inside Grok Bot, ask once for that exact action and leave all risky permissions on Ask first.
+
 **Connection state:** This is a handoff recipe, not evidence that any Grok Bot has been activated. Grok Bot's iOS/desktop app must authorize its own GitHub connection and create the routines. ChatGPT cannot remotely send it a private chat.
 
 ## One message to send to a new Grok Bot

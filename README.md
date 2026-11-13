@@ -57,3 +57,8 @@ All brand/product names are provisional and must be checked for legal conflicts 
 ## Release and validation
 
 `npm test` checks math. `python tests/browser_smoke.py` runs browser interactions using installed Playwright+Chromium; it also runs in GitHub Actions. See `LAUNCH.md` for acceptance, customer interviews, monetization steps and outstanding blockers.
+
+
+## Advertising preparation
+
+Build now supports site-verification metadata and ads.txt using an owner's ADSENSE_PUBLISHER_ID. Actual ads remain disabled until AdSense approval and a verified consent flow are configured. See ADSENSE_SETUP.md. Four original practical guides were added under guides/ for user benefit, SEO and editorial context. No ad revenue is claimed.

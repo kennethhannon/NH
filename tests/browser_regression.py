@@ -87,6 +87,21 @@ def run():
                 page.locator("#job").fill("Revised demo project")
                 page.locator("#saveQuote").click()
                 expect(page.locator("#libraryCount")).to_have_text("Saved estimates: 1/25")
+                with page.expect_download() as dl:
+                    page.locator("#backupLibrary").click()
+                full_library=Path(dl.value.path()).read_bytes()
+                library_json=json.loads(full_library)
+                assert library_json["format"]=="practicalkit-quickquote-library-v1"
+                assert len(library_json["estimates"])==1
+                page.locator("#deleteQuote").click()
+                expect(page.locator("#libraryCount")).to_have_text("Saved estimates: 0/25")
+                page.locator("#uploadLibrary").set_input_files({
+                    "name":"quickquote-library-backup.json",
+                    "mimeType":"application/json",
+                    "buffer":full_library
+                })
+                expect(page.locator("#libraryCount")).to_have_text("Saved estimates: 1/25")
+                page.locator("#savedQuotes").select_option(index=1)
                 page.locator("#deleteQuote").click()
                 expect(page.locator("#libraryCount")).to_have_text("Saved estimates: 0/25")
                 expect(page.locator("#total")).to_have_text("$194.40")

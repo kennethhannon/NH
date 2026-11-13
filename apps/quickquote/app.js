@@ -118,5 +118,37 @@ $('deleteQuote').addEventListener('click',()=>{
     $('libraryStatus').textContent='Saved copy removed. The current editor remains unchanged.';
   }catch(err){$('libraryStatus').textContent='';$('error').textContent=err.message;}
 });
+$('backupLibrary').addEventListener('click',()=>{
+  try{
+    if(!archive.length){$('libraryStatus').textContent='No saved estimates to back up.';return;}
+    download('quickquote-library-backup.json',JSON.stringify({
+      format:'practicalkit-quickquote-library-v1',
+      exportedAt:new Date().toISOString(),estimates:archive
+    },null,2));
+    $('libraryStatus').textContent='Library backup downloaded. Keep it somewhere safe; browser storage can be cleared.';
+  }catch(err){$('error').textContent=err.message;}
+});
+$('restoreLibrary').addEventListener('click',()=>$('uploadLibrary').click());
+$('uploadLibrary').addEventListener('change',async()=>{
+  const file=$('uploadLibrary').files?.[0];
+  if(!file)return;
+  try{
+    if(file.size>12000000)throw Error('Library backup is too large (maximum 12 MB).');
+    const payload=JSON.parse(await file.text());
+    if(payload?.format!=='practicalkit-quickquote-library-v1'||
+       !Array.isArray(payload.estimates)||payload.estimates.length>LIBRARY_CAP){
+      throw Error('Not a supported QuickQuote library backup (maximum 25 estimates).');
+    }
+    const restored=normalizeLibrary(payload.estimates);
+    if(restored.length!==payload.estimates.length)throw Error('Library backup has invalid or duplicate estimates.');
+    if(!confirm('Replace ALL saved estimates in this browser with the selected library backup? Export your existing library first.'))return;
+    storeArchive(restored);
+    activeArchiveId=null;
+    drawArchive();
+    $('libraryStatus').textContent='Library restored on this device ('+restored.length+' estimates). The current editor was not replaced.';
+    $('error').textContent='';
+  }catch(err){$('libraryStatus').textContent='';$('error').textContent=err.message;}
+  finally{$('uploadLibrary').value='';}
+});
 render();
 drawArchive();
